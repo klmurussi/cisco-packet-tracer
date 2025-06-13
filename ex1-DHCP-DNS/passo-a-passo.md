@@ -1,87 +1,116 @@
-# Duas redes, um servidor DNS e uma página html
-Passo a passo para configurar este projeto.
-![img](image.png).
+# Duas redes, um servidor DNS e uma página HTML  
+Passo a passo para configurar este projeto.  
+![img](image.png)
 
-Objetivo: fazer as duas redes se comunicarem.
+**Objetivo:** Fazer as duas redes se comunicarem. Uma com servidor DHCP/DNS, a outra configurada manualmente.
 
+## ⚙️ Configurações básicas nos switches (e roteador)
 
-## Configurações básicas em cada switche (e roteador)
-Hostname, banner, senha da console.
+### 🔠 Definindo um Hostname
 
-### Definindo um Hostname
-<p>Switch>enable
-<p>Switch#configure terminal
-<p>Switch(config)#hostname [nome]
-<p>> name: s1, s2, sterrio, s1piso, r1, r2 etc
+```bash
+Switch>enable
+Switch#configure terminal
+Switch(config)#hostname s1  # ou s2, sterrio, s1piso, r1, etc.
+```
+➡️ Isso muda o nome do dispositivo, pra facilitar a identificação na topologia.
 
-### Colocando um Banner
-<p>Switch>enable
-<p>Switch#configure terminal
-<p>Switch(config)#banner motd # [mensagem] #
-<p>> mensagem: ACESSO RESTRITO, ACESSO PROIBIDO etc
+### 🧾 Colocando um Banner
 
-### Colocando uma Senha
-<p>Switch>enable
-<p>Switch#configure terminal
-<p>Switch(config)#line console 0
-<p>Switch(config-line)#password [senha]
-<p>> senha: para os exercícios pode ser 1234, mas em caso real, uma forte
-<p>Switch(config-line)#login
-<p>Switch(config-line)#exit
+```bash
+Switch(config)#banner motd # ACESSO RESTRITO #
+```
+➡️ O banner aparece na hora que alguém acessa o dispositivo pelo terminal. Ideal pra avisos.
 
-### Salvando as configurações
-<p>Switch(config)#do copy running-config startup-config
+### 🔒 Colocando uma Senha
 
-### Reiniciando
-<p>Switch(config)#do reload
+```bash
+Switch(config)#line console 0
+Switch(config-line)#password 1234  # (pode ser uma senha mais forte)
+Switch(config-line)#login
+Switch(config-line)#exit
+```
+➡️ Isso protege o acesso via console com senha. 
 
-## Configundo os IPs
+### 💾 Salvando as configurações
 
-### No roteador
-<p>Router>enable
-<p>Router#configure terminal
-<p>Router(config)#interface gigabitethernet0/0/0
-<p>Router(config-if)#ip add 192.168.5.1 255.255.255.0 <- ip e submask do switch1>
-<p>Router(config-if)#no shutdown
-<p>Router(config-if)#exit
+```bash
+Switch(config)#do copy running-config startup-config
+```
+➡️ Salva a configuração atual para que ela não se perca se o dispositivo reiniciar.
 
-<p>Router(config)#interface gigabitethernet0/0/1
-<p>Router(config-if)#ip add 192.168.10.1 255.255.255.0 <- ip e submask do switch2>
-<p>Router(config-if)#no shutdown
-<p>Router(config-if)#exit
+### 🔁 Reiniciando
 
-## No servidor
-<p>Vá para `Desktop` -> `IP Configuration`:
-<p>Adicione manualmente o IPv4. Deve ser da mesma rede do switch.
-<p>O gateway é o IP do switch que foi definido no passo anterior.
-<p>Deixe o DNS é o próprio IP do servidor!
+```bash
+Switch(config)#do reload
+```
+➡️ Reinicia o dispositivo. 
 
-<p>Vá para `Services` -> `DHCP`:
-<p>Service `ON`.
-<p>Adicione em Gateway e DNS Server, o mesmo que foi configurado anteriormente em IP configuration.
-<p>Start IP Address: mude o último número, por exemplo, se seu roteador termina em 1 e seu DNS em 2. Então o serviço DHCP deve começar pelo menor por 3.
-<p>Clique em `Save`.
+## 🌐 Configurando os IPs
 
-<p>Vá para `DNS`:
-<p>DNS Service `ON`.
-<p>Name: adicione um endereço. Como www.meuservidor.com
-<p>Address: o IP do servidor.
-<p>Clique em `Add`.
+### No roteador (interfaces para as redes)
 
-<p>(Opcional) Em `HTTP` você pode configurar o site do servidor. 
+```bash
+Router>enable
+Router#configure terminal
 
-### Manualmente nos computadores
-> Isto para a rede em que o switch não está conectado a um servidor dhcp. Como a rede `192.168.10.0` neste exercício.
+Router(config)#interface gigabitethernet0/0/0
+Router(config-if)#ip address 192.168.5.1 255.255.255.0
+Router(config-if)#no shutdown
+Router(config-if)#exit
 
-<p>Em cada computador, vá para `Desktop` -> `IP Configuration`
-<p>Adicione manualmente o IPv4. Deve ser da mesma rede do switch.
-<p>O gateway é o IP do switch que foi definido no passo anterior.
-<p>DNS: ip do servidor da outra rede.
+Router(config)#interface gigabitethernet0/0/1
+Router(config-if)#ip address 192.168.10.1 255.255.255.0
+Router(config-if)#no shutdown
+Router(config-if)#exit
+```
+➡️ Define IPs nas interfaces do roteador que vão se conectar às duas redes. São os gateways.
 
-### Via DHCP
-<p>Em cada computador, vá para `Desktop` -> `IP Configuration`
-<p>Selecione `DHCP`. Se não aparecer mensagem de erro, significa que o tudo foi configurado corretamente.
+## 🖥️ No servidor
 
-## Teste
-1. Testar com PDU (o ícone de email fechado na barra de ferramentas).
-2. Testar em cada PC, vá para `Desktop` -> `Web Browser`. Digite o dominio do servidor DNS, se aparecer, signfica que tudo ocorreu certo.![alt text](image.png)
+### `Desktop` → `IP Configuration`
+
+* Configure manualmente um IP na mesma rede do switch (ex: `192.168.5.2`)
+* Gateway: IP do roteador (ex: `192.168.5.1`)
+* DNS: o **próprio IP do servidor**
+
+### `Services` → `DHCP`
+
+* `Service: ON`
+* `Gateway` e `DNS Server`: os mesmos definidos acima
+* `Start IP Address`: por exemplo, `192.168.5.3`
+* Clique em `Save`
+➡️ Isso permite ao servidor distribuir IPs automaticamente para os PCs da rede.
+
+### `Services` → `DNS`
+
+* `DNS Service: ON`
+* `Name`: por exemplo, `www.meuservidor.com`
+* `Address`: IP do próprio servidor (ex: `192.168.5.2`)
+* Clique em `Add`
+➡️ Agora você pode acessar o servidor pelo nome e não só pelo IP.
+
+### (Opcional) `Services` → `HTTP`
+
+* Configure uma página HTML simples para que os PCs possam acessá-la via navegador.
+
+## 💻 Configurando os PCs
+
+### Manualmente (para a rede sem DHCP: `192.168.10.0`)
+
+* `Desktop` → `IP Configuration`
+* IP: ex: `192.168.10.2` -> mudar os IPs para cada computador
+* Subnet: `255.255.255.0`
+* Gateway: `192.168.10.1`
+* DNS: `192.168.5.2` (IP do servidor da outra rede)
+
+### Via DHCP (para a rede `192.168.5.0`)
+
+* `Desktop` → `IP Configuration`
+* Selecione `DHCP`
+* Deve aparecer IP automático. Se funcionar, tá tudo certo!
+
+## ✅ Testes
+
+1. Use o **PDU** (ícone de envelope) para testar conectividade entre PCs e servidores.
+2. Nos PCs, vá em `Desktop` → `Web Browser` → digite o domínio que você configurou (ex: `www.meuservidor.com`) — se abrir, sucesso!

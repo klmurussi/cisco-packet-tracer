@@ -1,79 +1,125 @@
-# VLAN com DHCP
-Passo a passo para configurar este projeto.
-![img](image.png).
+# VLAN com DHCP  
+Passo a passo para configurar este projeto.  
+![img](image.png)
 
-Objetivo: Criar uma rede com múltiplas VLANs, utilizando `modo trunk` entre switches e servidor DHCP para fornecer IPs automaticamente às VLANs. 
+**Objetivo:** Criar uma rede com múltiplas VLANs, utilizando `modo trunk` entre switches e um servidor DHCP para fornecer IPs automaticamente às VLANs.
 
-## Configurações básicas em cada switche (e roteador)
-Hostname, banner, senha da console.
+## ⚙️ Configurações básicas (switches e roteador)
 
-Seguir os passos de configurações básicas no [ex1](../ex1-DHCP-DNS/passo-a-passo.md/#configurações-básicas-em-cada-switche-e-roteador)
+➡️ Siga os mesmos passos de configuração inicial do [ex1](../ex1-DHCP-DNS/passo-a-passo.md/): hostname, banner, senha, salvar e reiniciar.
 
-## Criando as VLANs
-Seguir os passos de criação de VLAN no [ex2](../ex2-VLAN/passo-a-passo.md/#criando-as-vlans).
+## 🧩 Criando as VLANs
 
-+
+➡️ Primeiro, crie as VLANs normalmente (como no [ex2](../ex2-VLAN/passo-a-passo.md/)):
+```bash
+Switch(config)#vlan 2
+Switch(config-vlan)#name TI
+Switch(config-vlan)#exit
 
-<p>Switch(config)#interface gigabitethernet 0/1
-<p>Switch(config-if)#switch mode trunk
-<p>Switch(config-if)#switch trunk allowed vlan all
-<p>Switch(config-if)#do write memory
+Switch(config)#vlan 3
+Switch(config-vlan)#name VENDAS
+Switch(config-vlan)#exit
+```
 
-### Atribuindo portas as VLANs
-Seguir os passos de atribuição de portas as VLANs no [ex2](../ex2-VLAN/passo-a-passo.md/#atribuindo-portas-as-vlans).
+## 🔁 Habilitando o modo trunk
 
-## No roteador
-<p>Router>enable
-<p>Router#configure terminal
-<p>Router(config)#interface gigabitethernet0/0/0
-<p>Router(config-if)#no ip address
-<p>Router(config-if)#no shutdown
-<p>Router(config-if)#interface gigabitethernet0/0/0.1
-<p>Router(config-subif)#encapsulation dot1q 1
-<p>Router(config-subif)#ip address 192.168.1.1 255.255.255.0
-<p>Router(config-subif)#ip helper-address 192.168.1.2
-<p>Router(config-subif)#interface gigabitethernet0/0/0.2
-<p>Router(config-subif)#encapsulation dot1q 2
-<p>Router(config-subif)#ip address 192.168.5.1 255.255.255.0
-<p>Router(config-subif)#ip helper-address 192.168.1.2
-<p>Router(config-subif)#exit
-<p>Router(config)#interface gigabitethernet0/0/0.3
-<p>Router(config-subif)#encapsulation dot1q 3
-<p>Router(config-subif)#ip address 192.168.10.1 255.255.255.0
-<p>Router(config-subif)#ip helper-address 192.168.1.2
-<p>Router(config-subif)#exit
-<p>Router(config)#do write memory
+```bash
+Switch(config)#interface gigabitethernet0/1
+Switch(config-if)#switchport mode trunk
+Switch(config-if)#switchport trunk allowed vlan all
+Switch(config-if)#do write memory
+```
+➡️ Isso permite que o switch envie tráfego de **múltiplas VLANs** por uma única porta.
 
-## No Servidor
-<p>IP 192.168.1.2
-<p>DNS 192.168.1.2
-<p>GATEWAY 192.168.1.1
+## 🔌 Atribuindo portas às VLANs
 
-<p>Vá para `Services` -> `DHCP`:
+➡️ Siga os mesmos passos do [ex2](../ex2-VLAN/passo-a-passo.md/), por exemplo:
 
-<p>1º POOL
-<p>Service `ON`.
-<p>Adicione em Gateway e DNS Server, o mesmo que foi configurado anteriormente em IP configuration.
-<p>Clique em `Save`.
+```bash
+Switch(config)#interface range fastethernet0/2-5
+Switch(config-if-range)#switchport access vlan 2
+Switch(config-if-range)#exit
 
-<p>2º POOL
-<p>Service `ON`.
-<p>Pool name-Vlan2
-<p>Adicione em DNS Server, o mesmo que foi configurado anteriormente em IP configuration.
-<p>No Gateway, coloque o endereço da VLAN 2, neste caso 192.168.5.1
-<p>Clique em `Add`.
+Switch(config)#interface range fastethernet0/6-9
+Switch(config-if-range)#switchport access vlan 3
+Switch(config-if-range)#exit
+```
 
-<p>3º POOL
-<p>Service `ON`.
-<p>Pool name-Vlan3
-<p>Adicione em DNS Server, o mesmo que foi configurado anteriormente em IP configuration.
-<p>No Gateway, coloque o endereço da VLAN 3, neste caso 192.168.10.1
-<p>Clique em `Add`.
+## 📡 No Roteador (Subinterfaces para VLANs)
 
-## Configurando os IPs nos computadores
-<p>Em cada computador, vá para `Desktop` -> `IP Configuration`
-<p>Adicione o IPv4 via DHCP.
-<p>Confira se os IPs são os esperados.
+```bash
+Router>enable
+Router#configure terminal
 
-## Teste
-1. Testar com PDU (o ícone de email fechado na barra de ferramentas) a comunicação entre dois computadores vlans diferentes. O resultado esperado é `sucess`.
+Router(config)#interface gigabitethernet0/0/0
+Router(config-if)#no ip address
+Router(config-if)#no shutdown
+Router(config-if)#exit
+
+Router(config)#interface gigabitethernet0/0/0.1
+Router(config-subif)#encapsulation dot1Q 1
+Router(config-subif)#ip address 192.168.1.1 255.255.255.0
+Router(config-subif)#ip helper-address 192.168.1.2
+Router(config-subif)#exit
+
+Router(config)#interface gigabitethernet0/0/0.2
+Router(config-subif)#encapsulation dot1Q 2
+Router(config-subif)#ip address 192.168.5.1 255.255.255.0
+Router(config-subif)#ip helper-address 192.168.1.2
+Router(config-subif)#exit
+
+Router(config)#interface gigabitethernet0/0/0.3
+Router(config-subif)#encapsulation dot1Q 3
+Router(config-subif)#ip address 192.168.10.1 255.255.255.0
+Router(config-subif)#ip helper-address 192.168.1.2
+Router(config-subif)#exit
+
+Router#write memory
+```
+
+➡️ Cada subinterface representa uma VLAN.
+➡️ O comando `ip helper-address` direciona as requisições de DHCP para o **servidor DHCP centralizado** (neste caso, 192.168.1.2).
+
+---
+
+## 🖥️ No Servidor (DHCP + DNS)
+
+Configure o IP do servidor:
+
+```txt
+IP:       192.168.1.2  
+GATEWAY:  192.168.1.1  
+DNS:      192.168.1.2
+```
+
+### Vá para `Services` → `DHCP` e crie 3 pools:
+
+#### 🟢 Pool 1 (Rede do servidor - VLAN 1)
+
+* Gateway: 192.168.1.1
+* DNS: 192.168.1.2
+* Save
+
+#### 🔵 Pool 2 (VLAN 2 - TI)
+
+* Pool name: Vlan2
+* Gateway: 192.168.5.1
+* DNS: 192.168.1.2
+* Add
+
+#### 🟠 Pool 3 (VLAN 3 - Vendas)
+
+* Pool name: Vlan3
+* Gateway: 192.168.10.1
+* DNS: 192.168.1.2
+* Add
+
+## 🧑‍💻 Nos Computadores
+Vá para `Desktop` → `IP Configuration ` e escolha **DHCP**.
+➡️ Se os IPs forem atribuídos automaticamente e estiverem na faixa correta da VLAN, está tudo funcionando!
+
+## ✅ Testes
+
+1. Com **PDU (ícone de envelope)**, teste a comunicação entre dois PCs de **VLANs diferentes**.
+   Resultado esperado: `✔️ Sucesso`.
+2. Teste também acesso ao DNS (se configurado), por exemplo acessando um domínio via navegador.
