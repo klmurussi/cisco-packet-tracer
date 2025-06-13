@@ -19,7 +19,6 @@ Praticar os conceitos vistos em aula, como:
 - Configuração de switches e roteadores
 - DHCP, DNS, NAT, e afins
 - Protocolos de roteamento como RIP e OSPF
-- Tudo que cair na prova ou aparecer na vida real 😅
 
 ## 💡 Como usar
 
