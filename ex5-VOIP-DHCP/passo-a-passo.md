@@ -1,6 +1,7 @@
 # VoIP com múltiplas VLANs e DHCP
 
 Passo a passo para configurar este projeto.
+
 ![img](image.png)
 
 **Objetivo:** Criar uma rede com múltiplas VLANs (TI, Vendas e VoIP), onde os telefones IP recebem IPs via DHCP e se registram automaticamente com ramais atribuídos via CME (Cisco Unified Communications Manager Express).
