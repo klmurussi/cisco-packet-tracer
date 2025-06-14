@@ -1,6 +1,7 @@
 # 💻 Telnet – Acesso Remoto Não Seguro
 
 Passo a passo para configurar acesso remoto via **Telnet**.
+
 ![img](image.png)
 
 **Objetivo:** Permitir o acesso remoto a roteadores via Telnet para fins de estudo e laboratório.
